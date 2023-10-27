@@ -1,46 +1,45 @@
-# plotter.py
+def is_role(required_role):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            user_type = kwargs.get('user_type')
+            if user_type == required_role:
+                return func(*args, **kwargs)
+            else:
+                raise ValueError("Permission denied")
 
-import matplotlib.pyplot as plt
+        return wrapper
 
-years = list (range(2000, 2023))
-exchange_rates = [
-    5.64, 5.61, 5.12, 5.05, 5.07, 5.08, 5.05, 4.48, 4.21, 4.00, 3.84, 3.14, 2.79, 2.39,
-    2.34, 1.99, 1.87, 1.89, 1.80, 1.86, 2.30, 2.70, 2.75
-]
+    return decorator
 
-plt.figure(figsize=(10, 6))
-plt.plot(years, exchange_rates, marker='o', linestyle='-')
-plt.title("UAH/USD Exchange Rate (2000-2022)")
-plt.xlabel("Year")
-plt.ylabel("Exchange Rate (UAH to USD)")
-plt.grid(True)
-plt.show()
+# Usage
+@is_role('admin')
+def show_customer_receipt(**kwargs):
+    # Some operation
+    print("Showing customer receipt")
+
+# Test with different user roles
+try:
+    show_customer_receipt(user_type='user')
+except ValueError as e:
+    print(e)
+
+show_customer_receipt(user_type='admin')
 
 
-# currency_converter.py
 
-exchange_rates = {
-    "USD": 1.0,
-    "EUR": 0.85,
-    "GBP": 0.73,
-    "JPY": 110.47,
-    "AUD": 1.35,
-    "CAD": 1.27,
-    "CHF": 0.92,
-    "CNY": 6.46,
-}
+def catch_errors(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"Found 1 error during execution of your function: {e}")
 
-def convert_currency(amount, from_currency, to_currency):
-    if from_currency in exchange_rates and to_currency in exchange_rates:
-        rate = exchange_rates[to_currency] / exchange_rates[from_currency]
-        converted_amount = amount * rate
-        return converted_amount
-    else:
-        return "Invalid currency codes."
+    return wrapper
 
-if __name__ == "__main__":
-    amount = 100
-    from_currency = "USD"
-    to_currency = "EUR"
-    result = convert_currency(amount, from_currency, to_currency)
-    print(f"{amount} {from_currency} = {result} {to_currency}")
+# Usage
+@catch_errors
+def some_function_with_risky_operation(data):
+    print(data['key'])
+
+some_function_with_risky_operation({'foo': 'bar'})
+some_function_with_risky_operation({'key': 'bar'})
